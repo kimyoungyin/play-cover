@@ -6,7 +6,6 @@
 
 generator client {
     provider = "prisma-client-js"
-    output   = "../app/generated/prisma"
 }
 
 datasource db {
@@ -15,12 +14,15 @@ datasource db {
 }
 
 model User {
-    id        Int      @id @default(autoincrement())
-    email     String   @unique
-    password  String
-    createdAt DateTime @default(now())
-    covers    Cover[]
-    likes     Like[]
+    id            Int       @id @default(autoincrement())
+    email         String    @unique
+    name          String? // 선택적 필드로 추가
+    image         String? // 선택적 필드 추가
+    emailVerified DateTime? // 선택적 필드 추가
+    createdAt     DateTime  @default(now())
+    covers        Cover[]
+    likes         Like[]
+    Account       Account[]
 }
 
 model Cover {
@@ -41,4 +43,32 @@ model Like {
     coverId Int
     user    User    @relation(fields: [userId], references: [id])
     cover   Cover   @relation(fields: [coverId], references: [id])
+}
+
+// next-auth jwt기반 유저 관리
+model Account {
+    id                String  @id @default(cuid())
+    userId            Int
+    type              String
+    provider          String
+    providerAccountId String
+    refresh_token     String? @db.Text
+    access_token      String? @db.Text
+    expires_at        Int?
+    token_type        String?
+    scope             String?
+    id_token          String? @db.Text
+    session_state     String?
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([provider, providerAccountId])
+}
+
+model VerificationToken {
+    identifier String
+    token      String   @unique
+    expires    DateTime
+
+    @@unique([identifier, token])
 }
