@@ -8,7 +8,7 @@
 
 -   Next.js(14)
 -   Typescript
--   mysql(AWS RDS)
+-   neon postgres
 -   AWS S3
 -   배포: Vercel
 -   그 외 추가 가능
