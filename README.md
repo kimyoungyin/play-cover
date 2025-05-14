@@ -6,7 +6,8 @@
 
 -   Typescript
 -   Next.js
+-   next-auth: Oauth
 -   Neon postgres
--   Prisma
+-   prisma: TypeORM
 -   Vercel
 -   S3
