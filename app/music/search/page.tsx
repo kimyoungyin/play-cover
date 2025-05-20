@@ -1,11 +1,20 @@
 import InputBox from "@/app/music/search/InputBox";
 import YoutubeSearchResult from "@/app/music/search/YoutubeSearchResult";
+import { authOptions } from "@/lib/auth";
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
 
 export default async function Page(props: {
     searchParams?: Promise<{
         query?: string;
     }>;
 }) {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+        redirect("/");
+    }
+
     const searchParams = await props.searchParams;
     const query = searchParams?.query || "";
 
