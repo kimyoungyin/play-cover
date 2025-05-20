@@ -1,8 +1,9 @@
 "use client";
 
 import { useSession, signIn, signOut } from "next-auth/react";
+import Link from "next/link";
 
-export default function Home() {
+export default function Page() {
     const { data: session, status } = useSession();
 
     if (status === "loading") {
@@ -11,9 +12,10 @@ export default function Home() {
 
     return (
         <div>
-            {session ? (
+            {session && status === "authenticated" ? (
                 <div>
                     <p>Welcome, {session.user?.email}</p>
+                    <Link href={"/music/search"}>커버곡 업로드하기</Link>
                     <button onClick={() => signOut()}>Sign out</button>
                 </div>
             ) : (
