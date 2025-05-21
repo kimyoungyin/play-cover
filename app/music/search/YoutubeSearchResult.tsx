@@ -1,5 +1,6 @@
 import { fetchYouTubeVideoAndCount } from "@/lib/actions/youtube";
 import Link from "next/link";
+import { YouTubeEmbed } from "@next/third-parties/google";
 
 export default async function YoutubeSearchResult({
     query,
@@ -22,13 +23,7 @@ export default async function YoutubeSearchResult({
 
     return (
         <figure className="flex flex-col items-start space-x-4 p-4 border rounded-md shadow-md">
-            <iframe
-                src={`https://www.youtube.com/embed/${id}?autoplay=1&mute=1`}
-                width={600}
-                height={450}
-                allowFullScreen
-                allow="autoplay; encrypted-media"
-            />
+            <YouTubeEmbed videoid={id} height={450} width={600} />
             <figcaption>
                 <h2 className="text-lg font-semibold text-gray-800">
                     {snippet.title}
