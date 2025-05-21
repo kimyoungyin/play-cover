@@ -49,7 +49,7 @@ export async function fetchYouTubeVideoAndCount(videoUrl: string): Promise<{
 }> {
     async function fetchCoverCount(videoId: string): Promise<number> {
         return prisma.cover.count({
-            where: { youtubeVideoId: videoId },
+            where: { videoId },
         });
     }
 
