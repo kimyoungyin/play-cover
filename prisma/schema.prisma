@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
     provider = "prisma-client-js"
 }
@@ -13,45 +7,14 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model User {
-    id            Int       @id @default(autoincrement())
-    email         String    @unique
-    name          String? // 선택적 필드로 추가
-    image         String? // 선택적 필드 추가
-    emailVerified DateTime? // 선택적 필드 추가
-    createdAt     DateTime  @default(now())
-    covers        Cover[]
-    likes         Like[]
-    Account       Account[]
-}
-
-model Cover {
-    id             Int      @id @default(autoincrement())
-    title          String
-    fileUrl        String
-    youtubeVideoId String
-    createdAt      DateTime @default(now())
-    userId         Int
-    user           User     @relation(fields: [userId], references: [id])
-    likes          Like[]
-}
-
-model Like {
-    id      Int     @id @default(autoincrement())
-    isLike  Boolean // 좋아요 혹은 싫어요
-    userId  Int
-    coverId Int
-    user    User    @relation(fields: [userId], references: [id])
-    cover   Cover   @relation(fields: [coverId], references: [id])
-}
-
-// next-auth jwt기반 유저 관리
+// OAuth 계정 정보를 저장하는 모델
+// next-auth의 OAuth provider(Google, Github 등)와 연동된 계정 정보를 저장
 model Account {
     id                String  @id @default(cuid())
-    userId            Int
-    type              String
-    provider          String
-    providerAccountId String
+    userId            String // User 모델의 id를 참조
+    type              String // OAuth 타입 (예: "oauth", "email" 등)
+    provider          String // OAuth 제공자 (예: "google", "github" 등)
+    providerAccountId String // OAuth 제공자가 제공하는 고유 ID
     refresh_token     String? @db.Text
     access_token      String? @db.Text
     expires_at        Int?
@@ -63,12 +26,81 @@ model Account {
     user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@unique([provider, providerAccountId])
+    @@index([userId])
 }
 
+// 사용자 세션 정보를 저장하는 모델
+// next-auth의 세션 관리를 위한 정보를 저장
+model Session {
+    id           String   @id @default(cuid())
+    sessionToken String   @unique
+    userId       String // User 모델의 id를 참조
+    expires      DateTime // 세션 만료 시간
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
+}
+
+// 사용자 정보를 저장하는 모델
+// OAuth를 통해 로그인한 사용자의 기본 정보를 저장
+model User {
+    id            String    @id @default(cuid()) // cuid를 사용하여 고유한 ID 생성
+    name          String? // OAuth provider로부터 받은 사용자 이름 (선택적)
+    email         String?   @unique // OAuth provider로부터 받은 이메일 (유니크 인덱스)
+    emailVerified DateTime? // 이메일 인증 시간 (OAuth에서 자동으로 설정)
+    image         String? // OAuth provider로부터 받은 프로필 이미지 URL (선택적)
+    createdAt     DateTime  @default(now()) // 사용자 생성 시간
+    updatedAt     DateTime  @updatedAt // 사용자 정보 수정 시간
+
+    accounts Account[] // OAuth 계정 정보와의 1:N 관계
+    sessions Session[] // 세션 정보와의 1:N 관계
+    covers   Cover[] // 사용자가 업로드한 커버곡들과의 1:N 관계
+    likes    Like[] // 사용자가 누른 좋아요/싫어요와의 1:N 관계
+
+    @@index([email])
+}
+
+// 커버곡 정보를 저장하는 모델
+model Cover {
+    id          String   @id @default(cuid())
+    title       String // 커버곡 제목
+    description String? // 커버곡 설명 (선택적)
+    videoId     String // 유튜브 비디오 ID
+    audioUrl    String // S3에 업로드된 오디오 파일 URL
+    userId      String // 업로드한 사용자의 ID
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    likes Like[] // 이 커버곡에 대한 좋아요/싫어요 정보와의 1:N 관계
+
+    @@index([userId])
+    @@index([videoId])
+}
+
+// 좋아요/싫어요 정보를 저장하는 모델
+model Like {
+    id        String   @id @default(cuid())
+    isLike    Boolean // true: 좋아요, false: 싫어요
+    userId    String // 좋아요/싫어요를 누른 사용자 ID
+    coverId   String // 좋아요/싫어요가 달린 커버곡 ID
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+    cover Cover @relation(fields: [coverId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, coverId]) // 한 사용자가 한 커버곡에 하나의 좋아요/싫어요만 가능
+    @@index([userId])
+    @@index([coverId])
+}
+
+// 이메일 인증 토큰을 저장하는 모델 (next-auth 요구사항)
 model VerificationToken {
-    identifier String
-    token      String   @unique
-    expires    DateTime
+    identifier String // 이메일 등 식별자
+    token      String // 인증 토큰
+    expires    DateTime // 토큰 만료 시간
 
     @@unique([identifier, token])
 }
