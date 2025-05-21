@@ -1,7 +1,7 @@
 export default async function Page({
     params,
 }: {
-    params: { videoId: string };
+    params: Promise<{ videoId: string }>;
 }) {
     const videoId = (await params).videoId;
 
