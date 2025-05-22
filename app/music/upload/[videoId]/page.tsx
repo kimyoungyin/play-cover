@@ -1,7 +1,7 @@
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { YouTubeEmbed } from "@next/third-parties/google";
+import YoutubePlayer from "@/app/components/YoutubePlayer";
 import UploadForm from "./components/UploadForm";
 
 export default async function Page({
@@ -20,7 +20,7 @@ export default async function Page({
     return (
         <div className="flex flex-col md:flex-row gap-4 p-4">
             <div className="w-full md:w-1/2">
-                <YouTubeEmbed videoid={videoId} height={400} />
+                <YoutubePlayer videoId={videoId} height="400" />
             </div>
             <div className="w-full md:w-1/2">
                 <UploadForm videoId={videoId} />

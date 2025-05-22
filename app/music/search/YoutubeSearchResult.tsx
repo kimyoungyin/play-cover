@@ -1,6 +1,6 @@
 import { fetchYouTubeVideoAndCount } from "@/lib/actions/youtube";
 import Link from "next/link";
-import { YouTubeEmbed } from "@next/third-parties/google";
+import YoutubePlayer from "@/app/components/YoutubePlayer";
 
 export default async function YoutubeSearchResult({
     query,
@@ -23,7 +23,7 @@ export default async function YoutubeSearchResult({
 
     return (
         <figure className="flex flex-col items-start space-x-4 p-4 border rounded-md shadow-md">
-            <YouTubeEmbed videoid={id} height={450} width={600} />
+            <YoutubePlayer videoId={id} width="600" />
             <figcaption>
                 <h2 className="text-lg font-semibold text-gray-800">
                     {snippet.title}
